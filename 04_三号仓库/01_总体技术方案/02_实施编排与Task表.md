@@ -1,6 +1,6 @@
 # 实施编排与 Task 表：敏货看台 v1.0.0
 
-> 生成：AI（DEV-Agent）｜确认：DEV 自检+待评审｜时间：2026-10-28 18:20
+> 生成：AI（DEV-Agent）｜确认：DEV 自检+待评审｜时间：2026-10-28 18:20（R3 整改 2026-10-28 18:29）
 > 状态：待评审（对应模板 10/12/21 的合并承接；放行后由代码仓按 `ai-code-input-assembler` 汇编为 AI_CODE_INPUT，本表即汇编底稿）
 
 ## 1. 编排范围与结论
@@ -47,7 +47,7 @@
 |----|------|
 | 内容 | merge.py（STATUS_SEVERITY/merge_status/build_display_entries/单源口径分支）；constants.py（服务端枚举序）；可配置点 STATUS_MERGE_STRATEGY+fail-fast |
 | 涉及文件 | `backend/app/merge.py`、`backend/app/constants.py`、`tests/test_merge.py` |
-| 对应 | FR-003 全部；PD 硬要求①② |
+| 对应 | FR-003 全部；R2 硬要求①（就严单点实现+策略做成可配置点，版本范围说明 §7.1 子项） |
 | 验收自检 | `pytest tests/test_merge.py -q`（覆盖 AT-FR003-001~004 四类断言全绿）；`grep -rn "SEVERITY\|severity" backend/app --include="*.py" | grep -v merge.py | grep -v constants.py`（零命中=无第二实现） |
 
 ### Task-004 后端只读 API
@@ -74,8 +74,8 @@
 |----|------|
 | 内容 | constants.js（M03 §6 常量表逐条落）+ app.js（fetchJSON/statusBadge/conflictBadge/escapeHtml/highlight/导航/快捷搜索）+ app.css（三态色/徽章/矩阵） |
 | 涉及文件 | `frontend/static/js/constants.js`、`frontend/static/js/app.js`、`frontend/static/css/app.css` |
-| 对应 | PD 约定（页面清单 §2）；PD 硬要求③ |
-| 验收自检 | `node --check frontend/static/js/app.js 2>/dev/null || echo "no-node 环境改用浏览器控制台无报错"`；`grep -c "不可接" frontend/static/js/constants.js`（≥1）且 `grep -rn "不可接" frontend/static --include="*.js" | grep -v constants.js`（零命中=文案单点） |
+| 对应 | PD 约定（页面清单 §2）；R2 硬要求③（三态文案单点） |
+| 验收自检 | `node --check frontend/static/js/app.js 2>/dev/null || echo "no-node 环境改用浏览器控制台无报错"`；`grep -c "不可接" frontend/static/js/constants.js`（≥1）且 `grep -rn "不可接" frontend/static --include="*.js" | grep -v constants.js`（零命中=文案单点）；镜像一致性（R3 条件3）：`python3 -c "import re;css=set(re.findall(r'#[0-9a-f]{6}',open('frontend/static/css/app.css').read().lower()));js=set(re.findall(r'#[0-9a-f]{6}',open('frontend/static/js/constants.js').read().lower()));assert js<=css,(js,css);print('mirror-ok')"`（constants.js 色值 ⊆ app.css :root 真源） |
 
 ### Task-007 前端五页面
 
@@ -84,7 +84,7 @@
 | 内容 | index/regions/changes/maintain/search 五页，按 M04 §5 绑定表逐区块接 API；静态挂载 StaticFiles(html=True) 且 API 路由先行 |
 | 涉及文件 | `frontend/static/*.html`（5 件）、`backend/app/main.py`（挂载） |
 | 对应 | PD-001~005 ↔ FR-001~009（绑定表逐行） |
-| 验收自检 | `curl -s localhost:8000/ | grep -c 现状总览`（≥1）；五个路由逐一 `curl -s -o /dev/null -w "%{http_code} " localhost:8000/{,regions,changes,maintain,search}.html`（全 200）；`grep -rn "#dc2626" frontend/static --include="*.js" | grep -v constants.js`（零命中=色值单点） |
+| 验收自检 | `curl -s localhost:8000/ | grep -c 现状总览`（≥1）；五个路由逐一 `curl -s -o /dev/null -w "%{http_code} " localhost:8000/{,regions,changes,maintain,search}.html`（全 200）；.js 侧断言=文案单点+镜像不外溢（R3 条件3）：`grep -rn "不可接\|#dc2626" frontend/static --include="*.js" | grep -v constants.js`（零命中）；样式色值断言扫 app.css：`grep -n "#16a34a\|#d97706\|#dc2626" frontend/static/css/app.css`（恰 3 处且均位于 :root 块内，其余样式一律 var(--c-*) 引用） |
 
 ### Task-008 种子数据
 
@@ -129,3 +129,4 @@
 | 修订版 | 日期 | 修改内容 | 修改人 |
 |--------|------|----------|--------|
 | r1.0 | 2026-10-28 | 初始建立（Task-001~009/映射/自检命令） | AI（DEV-Agent） |
+| r1.1 | 2026-10-28 | R3 整改：条件2 Task-003/006 标尺统一；条件3 Task-006 增镜像一致性断言、Task-007 断言口径改写（.js=文案与镜像一致性，样式色值扫 app.css） | AI（DEV-Agent） |
