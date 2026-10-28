@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<!-- PD-001 现状总览 原型 | FR-001/FR-002/FR-003 | PM-Agent | 2026-10-28 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>敏货看台 · 现状总览</title>
+<style>
+  :root{
+    --bg:#f5f7fa;--card:#ffffff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+    --primary:#2563eb;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--ok-bg:#f0fdf4;
+    --warn-bg:#fffbeb;--bad-bg:#fef2f2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  a{text-decoration:none;color:inherit}
+  .nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:0 20px;height:52px;z-index:10}
+  .nav .logo{font-weight:700;color:var(--primary);margin-right:18px;font-size:15px}
+  .nav a.tab{padding:6px 12px;border-radius:6px;color:var(--muted)}
+  .nav a.tab.active{background:#eff6ff;color:var(--primary);font-weight:600}
+  .nav a.tab:hover{color:var(--primary)}
+  .nav .quick{margin-left:auto;display:flex;gap:6px}
+  .nav .quick input{border:1px solid var(--line);border-radius:6px;padding:5px 10px;width:180px;outline:none}
+  .nav .quick input:focus{border-color:var(--primary)}
+  .wrap{max-width:1080px;margin:20px auto;padding:0 20px}
+  .page-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .page-h h1{font-size:20px}
+  .cards{display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .stat{flex:1;min-width:160px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;border-top:4px solid var(--line)}
+  .stat .k{color:var(--muted);font-size:13px}
+  .stat .v{font-size:30px;font-weight:700;margin-top:2px}
+  .stat.ok{border-top-color:var(--ok)}.stat.ok .v{color:var(--ok)}
+  .stat.warn{border-top-color:var(--warn)}.stat.warn .v{color:var(--warn)}
+  .stat.bad{border-top-color:var(--bad)}.stat.bad .v{color:var(--bad)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .filters label{color:var(--muted);font-size:13px}
+  select,input[type=text]{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:#fff;outline:none;font-size:13px}
+  select:focus,input:focus{border-color:var(--primary)}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--primary);color:var(--primary)}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+  tr.row{cursor:pointer}
+  tr.row:hover{background:#f8fafc}
+  .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent}
+  .b-ACCEPTABLE{background:var(--ok-bg);color:var(--ok);border-color:#bbf7d0}
+  .b-CONDITIONAL{background:var(--warn-bg);color:var(--warn);border-color:#fde68a}
+  .b-FORBIDDEN{background:var(--bad-bg);color:var(--bad);border-color:#fecaca}
+  .conf{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:4px;font-size:11px;color:#4b5563;border:1px dashed #9ca3af;background:#f9fafb;cursor:help}
+  .src-line td{background:#fbfdff;font-size:12.5px;color:#4b5563}
+  .src-line .badge{font-size:11px;padding:1px 8px}
+  .src-hit td{background:#eef6ff}
+  .muted{color:var(--muted)}.small{font-size:12px}
+  .empty{text-align:center;color:var(--muted);padding:36px 0}
+  .foot{color:var(--muted);font-size:12px;text-align:center;margin:26px 0 10px}
+</style>
+</head>
+<body>
+<div class="nav">
+  <span class="logo">敏货看台</span>
+  <a class="tab active" href="PD-001_现状总览.html">现状总览</a>
+  <a class="tab" href="PD-002_分地区视图.html">分地区视图</a>
+  <a class="tab" href="PD-003_变化记录.html">变化记录</a>
+  <a class="tab" href="PD-004_规则维护.html">规则维护</a>
+  <a class="tab" href="PD-005_品名查询.html">品名查询</a>
+  <span class="quick"><input type="text" id="quick" placeholder="品名快捷搜索（中/英）"></span>
+</div>
+<div class="wrap">
+  <div class="page-h">
+    <h1>现状总览</h1>
+    <div class="filters">
+      <label>大区</label><select id="f-region"></select>
+      <label>信源</label><select id="f-source"></select>
+      <label>状态</label><select id="f-status"></select>
+      <button class="btn" id="f-reset">重置筛选</button>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="stat ok"><div class="k">可接</div><div class="v" id="n-acc">0</div></div>
+    <div class="stat warn"><div class="k">敏感（条件接）</div><div class="v" id="n-cond">0</div></div>
+    <div class="stat bad"><div class="k">不可接</div><div class="v" id="n-forb">0</div></div>
+  </div>
+  <div class="panel">
+    <div class="small muted" id="list-meta" style="margin-bottom:8px"></div>
+    <table>
+      <thead><tr><th style="width:34px"></th><th>品类</th><th>大区</th><th>状态</th><th>依据摘要</th><th>更新时间</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">当前筛选条件下无规则，请调整筛选</div>
+  </div>
+</div>
+<div class="foot">敏货看台 v1.0.0 原型 · 样例数据（虚构，不引用真实企业清单） · FR-001/002/003</div>
+
+<script>
+/* ===== 样例数据（QL-003 确认口径：22 品类 / 五大区 / ≥3 组冲突 / ≥8 条变化）===== */
+const REGIONS=[["EU","欧洲"],["NA","北美"],["ME","中东"],["SEA","东南亚"],["OTHER","其他"]];
+const SOURCES=[["POLICY","国家政策"],["CUSTOMS","海关"],["LOGISTICS","头部物流"],["CARRIER","船司"],["PORT","目的港"]];
+const STATUS=[["ACCEPTABLE","可接"],["CONDITIONAL","敏感"],["FORBIDDEN","不可接"]];
+const zhOf=(arr,k)=>{const f=arr.find(x=>x[0]===k);return f?f[1]:k};
+const CATEGORIES=[
+ [1,"锂电池","Lithium Battery"],[2,"内置电池电子产品","Electronics with Built-in Battery"],
+ [3,"纯电动汽车","Pure Electric Vehicle"],[4,"二手锂电电动车","Second-hand Lithium EV"],
+ [5,"电子烟","E-cigarette (ENDS)"],[6,"干燥食品","Dried Food"],[7,"食品罐头","Canned Food"],
+ [8,"膳食补充剂","Dietary Supplements"],[9,"含酒精化妆品","Alcohol-containing Cosmetics"],
+ [10,"硅胶制品","Silicone Products"],[11,"润滑油","Lubricating Oil"],[12,"原木制品","Log Wood Products"],
+ [13,"木质包装","Wooden Packaging (IPPC)"],[14,"雕刻机","Engraving Machine"],[15,"数控机床","CNC Machine Tool"],
+ [16,"大功率激光设备","High-power Laser Equipment"],[17,"侵权仿牌服装","Imitation Brand Apparel"],
+ [18,"钢卷","Steel Coil"],[19,"对讲机","Walkie-talkie"],[20,"无人机","Drone (UAV)"],
+ [21,"枪套","Gun Holster"],[22,"烟花","Fireworks"]];
+/* 规则：[id,品类id,大区,信源,状态,依据,操作者,更新时间] */
+const RULES=[
+ [1,1,"EU","POLICY","CONDITIONAL","(样例)欧盟电池法规：需提供合规证明与检测报告方可出运","关务-张明","2026-09-12"],
+ [2,1,"EU","CARRIER","FORBIDDEN","(样例)船司公告：锂电池订舱需全套危包资料（MSDS+海运报告+38.3），资料不全一律不接","关务-张明","2026-09-12"],
+ [3,1,"SEA","CARRIER","CONDITIONAL","(样例)船司：内置电产品需 MSDS+38.3 测试报告，可条件承接","关务-李华","2026-08-25"],
+ [4,2,"SEA","CARRIER","CONDITIONAL","(样例)船司审核要求：内置电池电子产品需提交 MSDS 与海运报告","关务-李华","2026-08-25"],
+ [5,3,"NA","CARRIER","CONDITIONAL","(样例)船司：纯电动车必须按 9 类危险品申报，需全套危包资料","关务-王芳","2026-09-02"],
+ [6,4,"NA","CARRIER","FORBIDDEN","(样例)船司差异化审核：绝对禁止承接二手锂电电动车","关务-李华","2026-08-30"],
+ [7,5,"NA","CUSTOMS","FORBIDDEN","(样例)FDA 进口警报：电子烟列入无需检验即扣留（DWPE）红名单","关务-张明","2026-10-08"],
+ [8,5,"NA","LOGISTICS","CONDITIONAL","(样例)头部物流：电子烟专线有条件收寄（需渠道报备）","关务-张明","2026-09-15"],
+ [9,6,"OTHER","LOGISTICS","ACCEPTABLE","(样例)头部物流可收寄清单：干燥食品类可正常收寄","关务-王芳","2026-08-18"],
+ [10,7,"NA","PORT","FORBIDDEN","(样例)目的港：食品罐头资质不全即扣留，温控风险高，禁止承接","关务-李华","2026-09-18"],
+ [11,8,"NA","CUSTOMS","CONDITIONAL","(样例)FDA：膳食补充剂需事前注册与事前申报，资质不全扣留","关务-王芳","2026-10-20"],
+ [12,9,"EU","POLICY","CONDITIONAL","(样例)欧盟 REACH 限制物质清单：含酒精化妆品受限制，需成分核查","关务-张明","2026-08-28"],
+ [13,10,"EU","LOGISTICS","ACCEPTABLE","(样例)头部物流可收寄清单：硅胶制品可正常收寄","关务-王芳","2026-08-18"],
+ [14,11,"SEA","POLICY","CONDITIONAL","(样例)液体膏状类：需确认腐蚀性/易燃性后条件承接","关务-李华","2026-09-08"],
+ [15,12,"NA","CUSTOMS","CONDITIONAL","(样例)海关：原木制品需 IPPC 熏蒸标识，无标识目的港拒绝入境","关务-李华","2026-08-22"],
+ [16,13,"EU","CUSTOMS","CONDITIONAL","(样例)海关：木质包装必须烙印 IPPC 标识并附熏蒸证明","关务-张明","2026-08-22"],
+ [17,14,"OTHER","POLICY","CONDITIONAL","(样例)两用物项管制清单：雕刻机属管制设备，逐单核查","关务-王芳","2026-09-25"],
+ [18,15,"SEA","POLICY","ACCEPTABLE","(样例)东南亚：数控机床无针对性管制（不含两用物项型号）","关务-王芳","2026-10-02"],
+ [19,16,"EU","POLICY","FORBIDDEN","(样例)出口管制公告：大功率激光器列入出口管制清单","关务-王芳","2026-10-14"],
+ [20,17,"EU","CUSTOMS","FORBIDDEN","(样例)海关：侵权产品查没并牵连承运资质，严禁承接","关务-张明","2026-08-20"],
+ [21,18,"NA","CARRIER","CONDITIONAL","(样例)船司：单件超 2 吨高密度重货，需提前申报仓位与特殊配载","关务-李华","2026-09-10"],
+ [22,19,"SEA","LOGISTICS","ACCEPTABLE","(样例)头部物流可收寄清单：对讲机可正常收寄","关务-张明","2026-08-22"],
+ [23,19,"SEA","CARRIER","CONDITIONAL","(样例)船司：对讲机需确认不含加密模块后有条件承接","关务-张明","2026-09-18"],
+ [24,20,"ME","POLICY","ACCEPTABLE","(样例)中东市场：无针对性无人机禁运政策","关务-张明","2026-08-15"],
+ [25,20,"ME","CUSTOMS","CONDITIONAL","(样例)海关：无人机需用途与最终用户申报核查","关务-张明","2026-09-01"],
+ [26,20,"ME","CARRIER","FORBIDDEN","(样例)船司中东航线更新：拒收无人机整机","关务-张明","2026-09-28"],
+ [27,20,"EU","CUSTOMS","CONDITIONAL","(样例)海关：无人机需用途与收货方核查","关务-李华","2026-08-30"],
+ [28,21,"NA","CUSTOMS","FORBIDDEN","(样例)海关：枪套属涉军品，禁止承接（英文品名询价典型漏网样例）","关务-王芳","2026-09-06"],
+ [29,22,"SEA","CARRIER","FORBIDDEN","(样例)船司 DG 清单：烟花全禁","关务-李华","2026-09-05"]];
+/* 变化记录：[id,规则id,旧态,新态,依据,操作者,时间]（≥8 条，含收紧与放宽两类） */
+const CHANGES=[
+ [901,2,"CONDITIONAL","FORBIDDEN","(样例)船司更新锂电池订舱政策：资料不全一律不接","关务-张明","2026-09-12 10:32"],
+ [902,26,"ACCEPTABLE","FORBIDDEN","(样例)船司中东航线更新：拒收无人机整机","关务-张明","2026-09-28 15:47"],
+ [903,29,"CONDITIONAL","FORBIDDEN","(样例)船司 DG 清单更新：烟花全禁","关务-李华","2026-09-05 09:15"],
+ [904,6,"CONDITIONAL","FORBIDDEN","(样例)船司差异化审核收紧：二手锂电电动车绝对禁接","关务-李华","2026-08-30 11:20"],
+ [905,7,"CONDITIONAL","FORBIDDEN","(样例)FDA 进口警报更新：电子烟列入 DWPE 红名单","关务-张明","2026-10-08 14:03"],
+ [906,18,"CONDITIONAL","ACCEPTABLE","(样例)东南亚目的国确认：该型号数控机床不涉两用物项","关务-王芳","2026-10-02 16:05"],
+ [907,10,"ACCEPTABLE","FORBIDDEN","(样例)目的港更新食品管控：罐头类无完整资质即扣留","关务-李华","2026-09-18 13:40"],
+ [908,19,"CONDITIONAL","FORBIDDEN","(样例)出口管制公告：大功率激光器列入管制","关务-王芳","2026-10-14 09:20"],
+ [909,23,"FORBIDDEN","CONDITIONAL","(样例)船司放宽：确认无加密模块的对讲机可有条件承接","关务-张明","2026-08-22 17:12"],
+ [910,11,"ACCEPTABLE","CONDITIONAL","(样例)FDA 注册要求更新：膳食补充剂需事前注册与申报","关务-王芳","2026-10-20 10:08"]];
+
+/* ===== 共享逻辑：就严合并（全局方案 §3）+ localStorage 增量 ===== */
+const LS="mhk_v100_";
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(LS+k))??d}catch(e){return d}};
+const save=(k,v)=>localStorage.setItem(LS+k,JSON.stringify(v));
+let nextRuleId=1000,nextCatId=1000,nextChgId=1000;
+function allCategories(){const ex=load("cats",[]);return CATEGORIES.concat(ex)}
+function allRules(){
+  const ex=load("rules",[]);const patch=load("patches",{});
+  return RULES.map(r=>{const p=patch[r[0]];return p?[r[0],r[1],r[2],r[3],p.status,r.basis,r.operator,p.updated]:r.slice()}).concat(ex);
+}
+function allChanges(){return CHANGES.concat(load("changes",[]))}
+const SEV={ACCEPTABLE:0,CONDITIONAL:1,FORBIDDEN:2};
+function entryStatus(srcRules,sourceFilter){
+  let rs=srcRules;
+  if(sourceFilter){const hit=rs.find(r=>r[3]===sourceFilter);return hit?{status:hit[4],conflict:false,srcRules:rs,srcHit:hit}:null}
+  const st=rs.reduce((m,r)=>SEV[r[4]]>SEV[m]?r[4]:m,"ACCEPTABLE");
+  const conflict=new Set(rs.map(r=>r[4])).size>1;
+  return {status:st,conflict,srcRules:rs};
+}
+const badge=s=>`<span class="badge b-${s}">${zhOf(STATUS,s)}</span>`;
+const confTip="多个信源对该品类在此大区的判定不一致，已按就严原则（不可接 > 敏感 > 可接）展示最严状态，展开查看各信源原始判定";
+const confBadge=()=>`<span class="conf" title="${confTip}">多源冲突</span>`;
+
+/* ===== 本页渲染 ===== */
+const $=id=>document.getElementById(id);
+function fill(sel,arr,allLabel){$(sel).innerHTML=`<option value="">${allLabel}</option>`+arr.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("")}
+fill("f-region",REGIONS,"全部大区");fill("f-source",SOURCES,"全部信源");fill("f-status",STATUS,"全部状态");
+function entries(){
+  const rf=$("f-region").value,sf=$("f-source").value,stf=$("f-status").value;
+  const cats=allCategories(),rules=allRules();const out=[];
+  cats.forEach(c=>{
+    REGIONS.forEach(rg=>{
+      if(rf&&rg[0]!==rf)return;
+      const rs=rules.filter(r=>r[1]===c[0]&&r[2]===rg[0]);
+      if(!rs.length)return;
+      const e=entryStatus(rs,sf);if(!e)return;
+      if(stf&&e.status!==stf)return;
+      out.push({cat:c,region:rg,e});
+    });
+  });
+  out.sort((a,b)=>a.cat[1].localeCompare(b.cat[1],"zh")||a.region[0].localeCompare(b.region[0]));
+  return out;
+}
+function render(){
+  const es=entries();
+  const cnt={ACCEPTABLE:0,CONDITIONAL:0,FORBIDDEN:0};es.forEach(x=>cnt[x.e.status]++);
+  $("n-acc").textContent=cnt.ACCEPTABLE;$("n-cond").textContent=cnt.CONDITIONAL;$("n-forb").textContent=cnt.FORBIDDEN;
+  $("list-meta").textContent=`合计 ${es.length} 条展示条目（品类 × 大区，就严合并后）`;
+  const sf=$("f-source").value;
+  $("rows").innerHTML=es.map(x=>{
+    const worst=x.e.srcRules.filter(r=>r[4]===x.e.status).sort((a,b)=>b[7].localeCompare(a[7]))[0];
+    const srcRows=x.e.srcRules.map(r=>`<tr class="src-line${sf&&r[3]===sf?" src-hit":""}"><td></td><td colspan="5">└ ${zhOf(SOURCES,r[3])} ${badge(r[4])} <span>${r[5]}</span> <span class="muted">· ${r[6]} · ${r[7]}</span></td></tr>`).join("");
+    return `<tr class="row" data-k="${x.cat[0]}-${x.region[0]}">
+      <td>▾</td><td><b>${x.cat[1]}</b><br><span class="muted small">${x.cat[2]}</span></td>
+      <td>${x.region[1]}</td>
+      <td>${badge(x.e.status)}${x.e.conflict?confBadge():""}</td>
+      <td class="small">${worst?worst[5].slice(0,40)+(worst[5].length>40?"…":""):""}</td>
+      <td class="small muted">${worst?worst[7]:""}</td></tr>${srcRows}`;
+  }).join("");
+  $("empty").style.display=es.length?"none":"block";
+  document.querySelectorAll("tr.row").forEach(tr=>tr.onclick=()=>{let n=tr.nextElementSibling;let open=n&&n.style.display!=="none";
+    while(n&&n.classList.contains("src-line")){n.style.display=open?"none":"";n=n.nextElementSibling}
+    tr.cells[0].textContent=open?"▾":"▸";});
+}
+["f-region","f-source","f-status"].forEach(id=>$(id).onchange=render);
+$("f-reset").onclick=()=>{["f-region","f-source","f-status"].forEach(id=>$(id).value="");render()};
+$("quick").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.value.trim())location.href="PD-005_品名查询.html?q="+encodeURIComponent(e.target.value.trim())});
+render();
+</script>
+</body>
+</html>
