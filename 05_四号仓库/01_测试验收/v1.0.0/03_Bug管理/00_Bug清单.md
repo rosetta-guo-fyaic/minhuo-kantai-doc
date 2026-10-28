@@ -29,9 +29,11 @@
 1. **405 响应体未走 MH- 错误封套**：POST /api/changes、DELETE /api/rules/{id} 等返回框架默认 `{"detail":"Method Not Allowed"}`。M02 §7.2 错误封套口径未明示覆盖 405（业务错误码表仅 400/404/409/422/500）；「路由不存在」语义上属框架层。建议三号仓 M02 补一句口径（WH4-01）。
 2. **FR-009-M3 命中>50 截断与 FR-004 单区空行**：种子量级（22 品类/五区全覆盖）无法自然触发，本轮以构造数据（51 品类）与空库实例代位覆盖（WH4-02）。
 3. **修订面板定位实现**：openRevise 全量拉取 `/api/rules?granularity=source` 后前端 find 定位，M02 未定义「按 id 取单条源规则」端点，56 条量级无碍、>500 条存在性能与契约风险（WH4-04）。
+4. **favicon.ico 404（RUN-002 补验发现，P3-外观）**：空库实例打开 regions.html 时浏览器默认请求 `/favicon.ico` 得 404，产生 1 条 console.error（`Failed to load resource… 404`，location.url=http://localhost:8010/favicon.ico 已定位复现）。定性：五页 HTML 均未声明 favicon、静态目录无该文件，属浏览器默认请求落空——**非页面 JS 错误，不影响任何 FR/AT 与功能行为（空态 6 项功能断言全过、pageerror=0）**，故不登记为 BUG-001；建议后续版本补一个 favicon 或显式声明（不阻断）。
 
 ## 5. 版本历史
 
 | 修订版 | 日期 | 修改内容 | 修改人 |
 |--------|------|----------|--------|
 | r1.0 | 2026-10-28 | 初始建立：0 Bug + 2 项非 Bug 事件留痕 + 3 项观察 | AI（QA-Agent） |
+| r1.1 | 2026-10-28 | RUN-002 补验新增观察项 4（favicon.ico 404，P3-外观，不构成 Bug 的定性依据已留痕） | AI（QA-Agent） |
