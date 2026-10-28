@@ -1,0 +1,41 @@
+$ curl -s http://localhost:8000/api/overview
+{"counts":{"ACCEPTABLE":12,"CONDITIONAL":25,"FORBIDDEN":15},"total":52,"empty":false}
+$ curl -s "http://localhost:8000/api/regions/matrix" | python3 -m json.tool | head -22
+{
+    "rows": [
+        {
+            "region": "EU",
+            "region_zh": "\u6b27\u6d32",
+            "counts": {
+                "ACCEPTABLE": 2,
+                "CONDITIONAL": 5,
+                "FORBIDDEN": 4
+            },
+            "total": 11
+        },
+        {
+            "region": "NA",
+            "region_zh": "\u5317\u7f8e",
+            "counts": {
+                "ACCEPTABLE": 2,
+                "CONDITIONAL": 5,
+                "FORBIDDEN": 4
+            },
+            "total": 11
+        },
+$ curl -s "http://localhost:8000/api/search?q=%E9%94%82%E7%94%B5"
+{"q":"锂电","total_matched":1,"truncated":false,"categories":[{"category":{"id":1,"name_zh":"锂电池","name_en":"Lithium Battery"},"regions":[{"region":"EU","merged_status":"FORBIDDEN","conflict":true,"basis_digest":"船司公告升级：锂电池欧洲航线全面暂停承接（样例）","sources":[{"id":1,"source_type":"POLICY","rule_status":"CONDITIONAL","basis_text":"欧盟运输新规：
+$ curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8000/api/changes -H 'Content-Type: application/json' -d '{}'  → 断言 405
+405
+$ curl -s -X POST http://localhost:8000/api/rules -H 'Content-Type: application/json' -d '{"name_zh":"锂电池","name_en":"Lithium Battery","region":"EU","source_type":"POLICY","rule_status":"ACCEPTABLE","basis_text":"curl重复登记","operator":"QA-curl"}' -w '
+HTTP %{http_code}
+'
+{"error":{"code":"MH-409-DUPLICATE","message":"duplicate rule entry (category x region x source_type)","detail":{"existing_rule_id":1,"existing_status":"CONDITIONAL"}}}
+HTTP 409
+$ curl -s -X DELETE http://localhost:8000/api/rules/1 -w '
+HTTP %{http_code}
+'
+{"detail":"Method Not Allowed"}
+HTTP 405
+$ curl -s "http://localhost:8000/api/changes" | head -c 260
+{"items":[{"id":11,"changed_at":"2026-10-28 19:25","category":{"id":23,"name_zh":"QA界面登记品类"},"region":"NA","source_type":"CUSTOMS","old_status":"FORBIDDEN","new_status":"CONDITIONAL","basis_text":"QA 修订依据：恢复附条件承接（界面测

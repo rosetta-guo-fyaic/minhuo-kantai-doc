@@ -1,0 +1,21 @@
+$ curl -s http://localhost:8000/api/overview
+{"counts":{"ACCEPTABLE":12,"CONDITIONAL":24,"FORBIDDEN":15},"total":51,"empty":false}
+$ curl -s "http://localhost:8000/api/rules?region=EU&source_type=CARRIER" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps({"total":d["total"],"items":[(i["category"]["name_zh"],i["merged_status"],i["conflict"]) for i in d["items"]]},ensure_ascii=False))'
+{"total": 3, "items": [["内置电池电子产品", "CONDITIONAL", false], ["香水", "CONDITIONAL", false], ["锂电池", "FORBIDDEN", false]]}
+$ curl -s "http://localhost:8000/api/search?q=zzz" 
+{"q":"zzz","total_matched":0,"truncated":false,"categories":[]}
+$ curl -s -X PUT http://localhost:8000/api/rules/1 -H 'Content-Type: application/json' -d '{"new_status":"CONDITIONAL","basis_text":"curl同状态","operator":"QA"}' -w '
+HTTP %{http_code}
+'  （规则1=锂电池EU POLICY 当前 CONDITIONAL → 同状态 422）
+{"error":{"code":"MH-422-NO_CHANGE","message":"status unchanged, no revision needed","detail":{"rule_id":1,"status":"CONDITIONAL"}}}
+HTTP 422
+$ curl -s "http://localhost:8000/api/regions/XX/rules" -w '
+HTTP %{http_code}
+'
+{"error":{"code":"MH-404-NOT_FOUND","message":"resource not found","detail":{"field":"region","value":"XX"}}}
+HTTP 404
+$ curl -s "http://localhost:8000/api/search" -w '
+HTTP %{http_code}
+'  （空 q → 400）
+{"error":{"code":"MH-400-VALIDATION","message":"invalid request parameters","detail":{"field":"q","value":null}}}
+HTTP 400
